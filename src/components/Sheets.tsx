@@ -1,7 +1,7 @@
 "use client";
 import { useState, type ReactNode } from "react";
 import { CAT_LABEL, FURN_ICON, ITEMS, count, isOwned, type Cat, type Item, type Slot } from "@/lib/catalog";
-import { PACKS, channel, pay, rupiah } from "@/lib/payments";
+import { PACKS, pay, rupiah } from "@/lib/payments";
 import { useGame } from "@/store/game";
 import AvatarSvg from "@/components/avatar/AvatarSvg";
 
@@ -152,11 +152,10 @@ function Build() {
 function Topup() {
   const { topup, notify } = useGame();
   const [busy, setBusy] = useState<string | null>(null);
-  const ch = channel();
   return (
     <Sheet title="Isi Koin">
       <p className="mb-3 text-sm text-ink/70">
-        Pembayaran via {ch === "iap" ? "Google Play / App Store (IAP)" : "Xendit / Midtrans"}.
+        Pembayaran via Xendit / Midtrans.
       </p>
       <div className="grid grid-cols-2 gap-3">
         {PACKS.map((p) => (

@@ -18,7 +18,6 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.3",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
