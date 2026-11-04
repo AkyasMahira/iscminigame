@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
+// output: "export" -> hasil build statis di /out, dipakai Capacitor (mobile) & hosting web
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  output: "export",
+  images: { unoptimized: true },
   turbopack: {
     rules: {
       "*.css": {
