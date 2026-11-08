@@ -55,6 +55,14 @@ dan versi mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 - Tema scaffold default (warna `--background/--foreground`, font Arial, dan
   override `prefers-color-scheme: dark`) yang bertentangan dengan `Design.md`.
 
+## [0.2.1] - 2026-11-08
+
+### Changed
+- `AGENTS.md` disinkronkan ke pivot web-only + NFC (Wawan/Wowo, Wonland, Midtrans,
+  role & aturan hukum); status migrasi ditandai selesai.
+- Copy pembayaran jadi **Midtrans**-only (komentar `payments.ts` & teks Top-up `Sheets.tsx`).
+- `package.json` versi naik ke `0.2.1` (selaras dengan CHANGELOG).
+
 ## [0.2.0] - 2026-11-08
 
 ### Changed

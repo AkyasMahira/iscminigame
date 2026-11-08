@@ -155,7 +155,7 @@ function Topup() {
   return (
     <Sheet title="Isi Koin">
       <p className="mb-3 text-sm text-ink/70">
-        Pembayaran via Xendit / Midtrans.
+        Pembayaran via Midtrans.
       </p>
       <div className="grid grid-cols-2 gap-3">
         {PACKS.map((p) => (

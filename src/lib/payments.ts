@@ -1,4 +1,4 @@
-// Web -> Payment Gateway (Xendit/Midtrans).
+// Web -> Payment Gateway (Midtrans).
 export type Pack = { id: string; coins: number; price: number; bonus?: string };
 export const PACKS: Pack[] = [
   { id: "p1", coins: 100, price: 15000 },
