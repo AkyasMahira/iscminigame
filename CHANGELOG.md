@@ -55,6 +55,26 @@ dan versi mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 - Tema scaffold default (warna `--background/--foreground`, font Arial, dan
   override `prefers-color-scheme: dark`) yang bertentangan dengan `Design.md`.
 
+## [0.2.2] - 2026-11-08
+
+### Added
+- Landing marketing dibangun ulang di route group `(marketing)` (Wonland, Wawan & Wowo):
+  navbar (Masuk → `/d/demo`, tautan sekunder "Prototipe game 3D" → `/play`, sheet mobile),
+  hero dengan latar bergerak CSS/SVG (tanpa video; dukung `assets.heroVideo` bila diisi),
+  cerita Wonland, "Find yours" (grid blind box + alur beli mock), cara kerja 3 langkah, footer + label "Prototipe".
+- Komponen placeholder `CharacterSvg` (Wawan/Wowo) & `BlindBoxSvg`, ikon IG/TikTok inline.
+- `src/lib/assets.ts` (path aset terpusat) & `src/lib/mock-dolls.ts` (data boneka mock).
+- Halaman tap `/d/[id]`: simulasi tap → reveal → kode aktivasi (`DEMO-1234`) → valuasi + badge "Asli";
+  id selain "demo" menampilkan state "Tag tidak valid".
+
+### Changed
+- Landing `/` dipindah ke `src/app/(marketing)/`; `src/app/page.tsx` dihapus.
+- `globals.css`: animasi `floaty`/`shake`/`pop` (transform/opacity) dengan guard `prefers-reduced-motion`.
+
+### Removed
+- Komponen landing lama `home/Navbar`, `home/Hero`, `home/ProfileCard`, `home/ProfileSection`
+  (dead code; `home/data.ts` tetap untuk `/profile`).
+
 ## [0.2.1] - 2026-11-08
 
 ### Changed
