@@ -115,7 +115,7 @@ Struktur backend yang direncanakan (belum ada): `src/server/` (db, schema, auth,
 3. **Rahasia hanya di server:** kunci AES tag NFC, secret webhook, dan hash kode aktivasi tidak boleh masuk bundle client atau repo (pakai env).
 4. **Client-only untuk 3D:** game di-load via `dynamic(..., { ssr:false })`. Jangan akses `window`/`localStorage` di luar client component.
 5. **Pembayaran web-only** via gateway (Midtrans/Xendit); tidak ada IAP.
-6. **Migrasi:** `output: "export"` dan Capacitor dihapus pada langkah migrasi; setelah itu API routes dan Server Actions boleh dipakai. Sebelum langkah itu selesai, jangan menambah API routes.
+6. **Migrasi (selesai):** `output: "export"` & Capacitor sudah dihapus — API routes dan Server Actions boleh dipakai sekarang.
 7. UI Tailwind, mobile-first (`h-dvh`, viewport sempit). Ikuti **`Design.md`** (neo-brutalist: border tebal, shadow keras, tanpa gradient/blur) sebelum mengerjakan UI.
 8. Performa mobile: `dpr` max 1.5, shadow map 1024. Ukur FPS sebelum menambah light/shadow.
 
@@ -127,7 +127,7 @@ Struktur backend yang direncanakan (belum ada): `src/server/` (db, schema, auth,
 
 ## Roadmap (ringkas)
 
-1. **Migrasi konteks:** hapus `output: "export"` dan Capacitor, perbarui dokumen, buat branch `pivot-nfc`.
+1. **Migrasi konteks (selesai):** hapus `output: "export"` dan Capacitor, perbarui dokumen, buat branch `pivot-nfc`.
 2. **Backend dasar:** PostgreSQL + Drizzle, skema `users`, `dolls`, `activation_codes`, `items`, `inventories`.
 3. **Auth:** Google + email OTP + passkey, role.
 4. **NFC:** `/api/tap` (verifikasi SUN), `/api/claim` (+ kode aktivasi), `/d/<id>` publik/owner, kunci & transfer.

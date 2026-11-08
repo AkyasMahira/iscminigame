@@ -43,26 +43,27 @@ dan versi mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 - `src/components/Game.tsx`: layar loading bergaya kartu border + shadow dengan
   progress bar; wrapper game memakai `bg-bg`.
 - `src/components/Scene.tsx`: latar canvas diset ke `--sky` (`#bfcbff`).
-- `src/lib/payments.ts`: jalur pembayaran jadi **gateway-only** (Xendit/Midtrans);
-  teks Top-up di `Sheets.tsx` mengikuti.
 
 ### Fixed
 - `next.config.ts`: mengembalikan loader `@tailwindcss/turbopack`
   (`turbopack.rules["*.css"]`) yang hilang, sehingga **Tailwind kembali
   dikompilasi** saat build. Sebelumnya `@import "tailwindcss"` tidak
   diproses — utility class tidak ter-generate (CSS build hanya ~4.7 KB berisi
-  `@theme` mentah). Konfigurasi `output: "export"` & `images.unoptimized`
-  tetap dipertahankan.
+  `@theme` mentah).
 
 ### Removed
 - Tema scaffold default (warna `--background/--foreground`, font Arial, dan
   override `prefers-color-scheme: dark`) yang bertentangan dengan `Design.md`.
+
+## [0.2.0] - 2026-11-08
+
+### Changed
+- `src/lib/payments.ts`: jalur pembayaran jadi **gateway-only** (Xendit/Midtrans);
+  teks Top-up di `Sheets.tsx` mengikuti.
+
+### Removed
 - **Migrasi ke web-only:** `output: "export"` & `images.unoptimized` di
   `next.config.ts` (build jadi server Next.js, bukan static export).
 - **Capacitor** (`capacitor.config.ts` + dependency `@capacitor/cli`).
 - Deteksi channel IAP di `lib/payments.ts` (`Channel` type & `channel()`),
   menyisakan jalur gateway; signature `pay`/`PACKS`/`rupiah` tetap.
-
-<!--
-Belum dirilis. Fokus saat ini: Fase 0 (spike rendering 3D), lalu backend.
--->
