@@ -10,9 +10,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # iscminigame — Project Context
 
-Platform **web-only** (tanpa app Android/iOS) untuk boneka fisik blind box + dunia digital. Karakter: **Rara, Wowon, Buaya, Hiu**, masing-masing punya *land* sendiri. Boneka dijual dengan sertifikat; tag **NFC** di boneka dipakai untuk klaim, login, dan flexing akun boneka ke user lain. Setelah klaim, user meng-upgrade lewat web (baju, rumah, dll), dibeli dengan Koin/gateway.
+Platform **web-only** (tanpa app Android/iOS) untuk boneka koleksi fisik ala Labubu + dunia digital **Wonland** (bergaya Zootopia). Karakter: **Wawan** dan **Wowo** (karakter Suroboyo). Boneka dijual fisik sebagai blind box dengan sertifikat e-digital; chip **NFC** di dalam boneka dipakai untuk klaim, login, dan cek/flexing value. Setelah klaim, user mengkustomisasi boneka **3D** (baju, aksesori, rumah, background) dan berbelanja item di web. Ini **koleksi, bukan investasi** — lihat aturan hukum di bawah.
 
-**Status: pivot dari FE-only ke full-stack.** FE v1 (landing, game 3D, toko/lemari/rumah, avatar SVG) sudah ada dengan data mock/localStorage. Backend, auth, dan NFC **belum ada**. Migrasi konteks (hapus `output: "export"` & Capacitor) **selesai**; berikutnya backend dasar.
+Cerita dunia dikelola lewat IG (tanpa manusia), TikTok untuk promosi. Keduanya konteks saja; web hanya menautkan ikonnya.
+
+**Status: pivot dari FE-only ke full-stack.** FE v1 (landing, game 3D, toko/lemari/rumah, avatar SVG) sudah ada dengan data mock/localStorage. Backend, auth, dan NFC **belum ada**. Migrasi konteks (hapus `output: "export"` & Capacitor) **selesai**; route groups & backend menyusul.
 
 ## Stack
 
@@ -27,10 +29,10 @@ Sudah terpasang:
 Target (belum terpasang, tambahkan saat fasenya tiba, sebutkan alasan):
 - Next.js full-stack: Route Handlers / Server Actions untuk API
 - PostgreSQL + Drizzle ORM
-- Auth: Better Auth (Google + email OTP) + `@simplewebauthn` (passkey)
+- Auth: Better Auth (Google + email magic link/OTP) + `@simplewebauthn` (passkey)
 - Verifikasi NFC SUN: `aes-cmac` di server
-- Pembayaran: Midtrans atau Xendit (webhook ke Route Handler)
-- Aset 3D: Cloudflare R2 + CDN
+- Pembayaran: Midtrans (webhook ke Route Handler)
+- Aset 3D + media: Cloudflare R2 + CDN
 
 Capacitor dihapus dari rencana (web-only).
 
@@ -47,6 +49,7 @@ npm run build      # build produksi
 
 ## Struktur
 
+Kondisi saat ini:
 ```
 src/app/page.tsx         # landing: Navbar + Hero + ProfileSection
 src/app/play/page.tsx    # /play: dynamic import Game (ssr:false)
@@ -70,7 +73,17 @@ src/lib/
 src/store/game.ts        # Zustand: useGame + useProfile()
 ```
 
-Struktur backend yang direncanakan (belum ada): `src/server/` (db, schema, auth, nfc), `src/app/api/` (`tap`, `claim`, `transfer`, webhook pembayaran), `src/app/d/[id]` (halaman publik boneka), `src/app/admin/`.
+Struktur target (satu repo, satu app; belum ada): pakai route groups.
+```
+src/app/
+  (marketing)/   # landing, find-yours, beli, tentang, kontak — statis/ringan
+  (app)/         # core, butuh sesi: boneka, closet/fashion, garasi, office, family, wallet
+  d/[id]/        # halaman tap NFC (belum diklaim / owner / publik)
+  admin/         # staf
+  api/           # tap, claim, transfer, webhook Midtrans
+src/server/      # db, schema, auth, nfc, ledger
+```
+Aturan: R3F, three, dan Zustand game hanya dimuat di `(app)` dan `d/[id]` lewat dynamic import; `(marketing)` dijaga ringan dan statis. Satu domain agar cookie sesi terbaca di `d/[id]`.
 
 ## Data & store
 
@@ -78,25 +91,36 @@ Struktur backend yang direncanakan (belum ada): `src/server/` (db, schema, auth,
 - Non-furnitur dengan `price === 0` otomatis dimiliki. Furnitur butuh `inventory[id] > 0`, bisa dibeli berkali-kali (batas penempatan = jumlah dimiliki).
 - `useProfile()` = `visiting ?? me` — komponen scene otomatis menampilkan profil yang sedang dikunjungi.
 - `defaultsFix()` memperbaiki profil rusak dari storage; panggil saat load.
+- Target: `Profile.coins` menjadi saldo **Wonland** dari server; item dan inventori juga dari server.
+
+## Produk & alur
+
+- **Beli boneka** (Midtrans): pilih/cari boneka ("Find yours"), isi data diri, pilih pembayaran, email konfirmasi terkirim. Boneka fisik dikirim dengan kartu sertifikat berisi kode aktivasi.
+- **Home:** bisa di-scroll, background video (muted, loop, `playsInline`, poster fallback, dikompres), ikon IG dan TikTok.
+- **Akun hanya untuk pemilik boneka:** buat akun = tap NFC valid + kode aktivasi + email. Login selanjutnya via email magic link (tanpa password).
+- **Halaman boneka (setelah login):** valuasi boneka di pojok (mis. nilai dalam Wonland/rupiah), boneka **3D di tengah** yang bisa diputar, background bisa diganti, dan 5 tools: **Garasi** (barang dimiliki), **Fashion** (beli baju di web, kustomisasi ala Snapchat), **Office** (aktivitas ekonomi dalam game), **Family**, **Wallet** (top-up Wonland).
+- **Dunia Wonland:** berita/event memunculkan item limited (mis. rumah baru), ada leaderboard "paling kaya" (dalam Wonland).
+- **Marketplace item** antar user, memakai Wonland. Item yang tidak lagi dijual resmi boleh diperjualbelikan.
+- **Cek value tanpa login:** tap NFC atau input ID boneka menampilkan value publik.
 
 ## Domain boneka & NFC (desain target)
 
-**Entitas:** `users` (role), `dolls(uid, character, rarity, owner_id, counter, locked, claimed_at)`, `activation_codes(doll_uid, code_hash, used_at)`, `lands(character)`, `items`, `inventories`.
+**Entitas:** `users` (role), `dolls(uid, character, rarity, owner_id, counter, locked, claimed_at)`, `activation_codes(doll_uid, code_hash, used_at)`, `lands`, `items`, `inventories`, `wallets`, `wonland_ledger` (append-only), `item_listings`, `news_events`, `leaderboard`.
 
-**Tag:** NTAG 424 DNA dengan SUN. URL tiap tap berisi UID + counter + CMAC (`/t?u=…&c=…&m=…`). Server wajib memverifikasi CMAC dan memastikan counter naik; counter mundur/duplikat = tolak + catat sebagai indikasi clone.
+**Tag:** NTAG 424 DNA dengan SUN. URL tiap tap berisi UID + counter + CMAC (`/t?u=…&c=…&m=…`). Server wajib memverifikasi CMAC dan memastikan counter naik; counter mundur/duplikat = tolak + catat sebagai indikasi clone. Value disimpan di **server**, bukan di chip.
 
-**Klaim pertama:** tap valid + **kode aktivasi** (kode gosok di kartu sertifikat; simpan hash, sekali pakai, rate limit). Karakter blind box tetap rahasia sampai klaim (animasi reveal).
+**Klaim pertama:** tap valid + **kode aktivasi** (dari e-sertifikat/kartu; simpan hash, sekali pakai, rate limit). Karakter blind box tetap rahasia sampai klaim (animasi reveal).
 
 **Satu URL `/d/<id>` untuk semua kondisi:**
 | Kondisi | Hasil |
 |---|---|
 | Belum diklaim | halaman klaim (minta kode aktivasi) |
-| Sesi login = `owner_id` | mode owner: upgrade, beli, kelola |
-| Login sebagai user lain | halaman publik + badge "Asli", follow/visit |
-| Tidak login | halaman publik (flexing) + tombol Masuk |
+| Sesi login = `owner_id` | mode owner: kustomisasi, beli, kelola |
+| Login sebagai user lain | halaman publik + badge "Asli", value, follow/visit |
+| Tidak login | halaman publik (flexing/cek value) + pilihan Masuk |
 | Boneka `locked` | pesan "dilaporkan hilang" |
 
-**Prinsip:** tap = bukti boneka asli & ada di dekat user, **bukan** kunci login tunggal. Login normal via Google/passkey; perangkat baru = tap + OTP email; aksi sensitif (transfer, hapus, beli besar) wajib re-auth. Pemilik dibedakan lewat sesi akun vs `owner_id`, bukan lewat tap. Akun per **user**, boneka adalah item yang terikat ke akun.
+**Prinsip:** tap = bukti boneka asli & ada di dekat user, **bukan** kunci login tunggal. Pemilik dibedakan lewat sesi akun vs `owner_id`, bukan lewat tap. Perangkat baru = tap + magic link/OTP; aksi sensitif (transfer, hapus, pembelian besar) wajib re-auth. Akun per **user**, boneka adalah item yang terikat ke akun.
 
 **Fitur wajib:** kunci boneka (hilang/dicuri), transfer kepemilikan via kode sekali pakai, halaman publik tanpa data pribadi.
 
@@ -104,36 +128,43 @@ Struktur backend yang direncanakan (belum ada): `src/server/` (db, schema, auth,
 
 ## Role
 
-- Role akun (kolom `role`): `guest` (belum login), `user`, `support` (kunci/buka kunci boneka, bantu transfer, lihat log tap), `ops` (batch produksi, petakan UID→karakter, cetak kode aktivasi), `admin` (semua + katalog, harga, role, laporan). Tahap awal boleh digabung jadi `user` + `admin`.
+- Role akun (kolom `role`): `guest`, `user`, `support` (kunci/buka kunci boneka, bantu transfer, lihat log tap), `ops` (batch produksi, petakan UID→karakter, cetak kode aktivasi), `admin` (semua + katalog, harga, role, laporan). Tahap awal boleh digabung jadi `user` + `admin`.
 - Relasi per boneka: `owner` (`dolls.owner_id`) vs `visitor`. Owner **bukan** role akun.
 - `/admin` dijaga middleware cek role di **server** (bukan hanya sembunyikan tombol). `ops`/`admin` wajib passkey/2FA; semua aksi masuk audit log.
 
 ## Aturan penting (jangan dilanggar)
 
 1. **Pertahankan signature `lib/api.ts` & `lib/payments.ts`.** Backend mengganti isi (fetch), bukan antarmuka.
-2. **Server-authoritative.** Verifikasi NFC, klaim, transfer, koin, inventori, dan pembayaran divalidasi di server. Jangan percaya client. Selama backend belum ada, koin/inventori client-side bisa dicurangi (sementara).
+2. **Server-authoritative.** Verifikasi NFC, klaim, transfer, saldo Wonland, inventori, dan pembayaran divalidasi di server. Jangan percaya client. Selama backend belum ada, koin/inventori client-side bisa dicurangi (sementara).
 3. **Rahasia hanya di server:** kunci AES tag NFC, secret webhook, dan hash kode aktivasi tidak boleh masuk bundle client atau repo (pakai env).
-4. **Client-only untuk 3D:** game di-load via `dynamic(..., { ssr:false })`. Jangan akses `window`/`localStorage` di luar client component.
-5. **Pembayaran web-only** via gateway (Midtrans/Xendit); tidak ada IAP.
-6. **Migrasi (selesai):** `output: "export"` & Capacitor sudah dihapus — API routes dan Server Actions boleh dipakai sekarang.
-7. UI Tailwind, mobile-first (`h-dvh`, viewport sempit). Ikuti **`Design.md`** (neo-brutalist: border tebal, shadow keras, tanpa gradient/blur) sebelum mengerjakan UI.
-8. Performa mobile: `dpr` max 1.5, shadow map 1024. Ukur FPS sebelum menambah light/shadow.
+4. **Hukum/kepatuhan (wajib):**
+   - Wonland **satu arah**: uang → Wonland. **Dilarang membuat fitur withdraw/tarik tunai** atau konversi Wonland ke rupiah.
+   - **Dilarang memakai kata "investasi"**, "profit", "return", atau menjanjikan kenaikan value di UI, copy, maupun komentar. Value = harga pasar koleksi dari transaksi antar user, bukan janji sistem.
+   - Mekanik "saham", "menikah", dan "office" hanya hadiah dalam Wonland, tanpa payout uang nyata.
+   - Marketplace item hanya dengan Wonland. Payout rupiah ditahan sampai ada review hukum.
+5. **Mutasi Wonland** hanya lewat server dan wajib tercatat di `wonland_ledger` (append-only, atomik dalam transaksi DB).
+6. **Client-only untuk 3D:** `dynamic(..., { ssr:false })`. Jangan akses `window`/`localStorage` di luar client component.
+7. **Pembayaran web-only** via Midtrans; tidak ada IAP.
+8. **Migrasi (selesai):** `output: "export"` & Capacitor sudah dihapus — API routes dan Server Actions boleh dipakai sekarang.
+9. UI Tailwind, mobile-first (`h-dvh`, viewport sempit). Ikuti **`Design.md`** (neo-brutalist: border tebal, shadow keras, tanpa gradient/blur) sebelum mengerjakan UI.
+10. **Performa 3D di mobile web:** `dpr` max 1.5, shadow map 1024, GLB kecil (<~500 KB per model), fallback primitif. Ukur FPS sebelum menambah light/shadow. Halaman boneka adalah layar utama, jadi 3D harus tetap lancar di HP kelas menengah.
 
 ## Gotchas
 
 - GLB ditaruh di `public/models/` (**folder belum ada**) dan diisi field `glb` pada item. `Model.tsx` **fallback otomatis ke primitif** kalau file hilang/gagal load — bukan error, jadi mudah salah sangka model terpasang.
-- `public/` saat ini hanya aset scaffold create-next-app; belum ada model 3D.
-- Konsep lama "Visit ID" dan avatar generik akan diarahkan ke boneka + land per karakter.
+- `public/` saat ini hanya aset scaffold create-next-app; belum ada model 3D Wawan/Wowo.
+- Konsep lama "Visit ID" dan avatar generik akan diarahkan ke boneka (Wawan/Wowo) + dunia Wonland.
 
 ## Roadmap (ringkas)
 
-1. **Migrasi konteks (selesai):** hapus `output: "export"` dan Capacitor, perbarui dokumen, buat branch `pivot-nfc`.
+0. **Non-kode:** pesan sampel NTAG 424 DNA, tes di iPhone dan Android, termasuk di dalam boneka plush. Konsultasi hukum sebelum fitur wallet/marketplace.
+1. **Migrasi konteks:** ~~hapus `output: "export"` & Capacitor~~ (selesai) · **route groups** `(marketing)/(app)/d/[id]` (tugas berikutnya, sebelum backend) · branch `pivot-nfc`.
 2. **Backend dasar:** PostgreSQL + Drizzle, skema `users`, `dolls`, `activation_codes`, `items`, `inventories`.
-3. **Auth:** Google + email OTP + passkey, role.
-4. **NFC:** `/api/tap` (verifikasi SUN), `/api/claim` (+ kode aktivasi), `/d/<id>` publik/owner, kunci & transfer.
-5. **Kustomisasi avatar** (Lemari, `AvatarSvg`) dan **land per karakter**.
-6. **Pembayaran:** gateway + webhook, Koin server-authoritative.
-7. **Fase 0 spike 3D** (paralel): GLB avatar/mobil/furnitur, ukur FPS + waktu load di Android kelas menengah, kompres aset (<~500 KB), catat di `docs/spike-3d.md`. Lalu avatar modular part-swap GLB.
+3. **Auth:** Google + email magic link/OTP + passkey, role.
+4. **Irisan inti NFC:** `/api/tap` (verifikasi SUN), `/api/claim` (+ kode aktivasi), `/d/<id>` publik/owner, kunci & transfer, halaman boneka dengan value.
+5. **Landing (paralel dari langkah 4):** scroll, bg video, Find yours, beli via Midtrans, email konfirmasi.
+6. **Boneka 3D + kustomisasi:** model Wawan/Wowo (GLB part-swap), putar boneka, ganti background, toko Fashion. **Spike 3D di HP kelas menengah** (FPS, waktu load, ukuran aset) dicatat di `docs/spike-3d.md` — naik prioritas karena 3D adalah layar utama.
+7. **Wonland:** wallet, ledger, top-up Midtrans, lalu Garasi, Office, Family, berita Wonland, leaderboard, marketplace item.
 
 ## Konvensi kerja
 
